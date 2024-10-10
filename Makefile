@@ -1,7 +1,7 @@
 TAG ?= stable
 PUSH ?= false
-IMAGE_REGISTRY = quay.io/numaio/test/sink-log:${TAG}
-ARCHITECTURES = amd64 arm64
+IMAGE_REGISTRY = quay.io/adarsh0728/test/sink-log:${TAG}
+ARCHITECTURES = arm64
 
 .PHONY: build
 build:
@@ -11,7 +11,7 @@ build:
 
 .PHONY: image-push
 image-push: build
-	docker buildx build -t ${IMAGE_REGISTRY} --platform linux/amd64,linux/arm64 --target log . --push
+	docker buildx build -t ${IMAGE_REGISTRY} --platform linux/arm64 --target log . --push
 
 .PHONY: image
 image: build

@@ -2,32 +2,36 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"math/rand"
+	"time"
 
 	sinksdk "github.com/numaproj/numaflow-go/pkg/sinker"
 )
 
-// logSink is a sinker implementation that logs the input to stdout
-type logSink struct {
+// Slow sink implementation to test metric data in debugging
+type SlowSink struct{}
+
+func newSlowSink() *SlowSink {
+	return &SlowSink{}
 }
 
-func (l *logSink) Sink(ctx context.Context, datumStreamCh <-chan sinksdk.Datum) sinksdk.Responses {
+func (l *SlowSink) Sink(ctx context.Context, datumStreamCh <-chan sinksdk.Datum) sinksdk.Responses {
 	result := sinksdk.ResponsesBuilder()
 	for d := range datumStreamCh {
-		_ = d.EventTime()
-		_ = d.Watermark()
-		fmt.Println("User Defined Sink:", string(d.Value()))
+		if d.EventTime().Nanosecond()%10 == 0 {
+			sleepDuration := time.Duration(rand.Intn(5)) * time.Second
+			time.Sleep(sleepDuration)
+		}
 		id := d.ID()
-		fmt.Println("Id:", id)
 		result = result.Append(sinksdk.ResponseOK(id))
 	}
-	fmt.Println("result: ", result)
 	return result
 }
 
 func main() {
-	err := sinksdk.NewServer(&logSink{}).Start(context.Background())
+	slow_sink := newSlowSink()
+	err := sinksdk.NewServer(slow_sink).Start(context.Background())
 	if err != nil {
 		log.Panic("Failed to start sink function server: ", err)
 	}
