@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"math/rand"
 	"time"
@@ -19,11 +20,14 @@ func newSlowSink() *SlowSink {
 func (l *SlowSink) Sink(ctx context.Context, datumStreamCh <-chan sinksdk.Datum) sinksdk.Responses {
 	result := sinksdk.ResponsesBuilder()
 	for d := range datumStreamCh {
-		if d.EventTime().Nanosecond()%10 == 0 {
-			sleepDuration := time.Duration(rand.Intn(5)) * time.Second
-			time.Sleep(sleepDuration)
-		}
 		id := d.ID()
+		if d.EventTime().Nanosecond()%3 == 0 {
+			sleepDuration := time.Duration(rand.Intn(10)) * time.Second
+			fmt.Println("id: ", id, "sleep time: ", sleepDuration)
+			time.Sleep(sleepDuration)
+		} else {
+			fmt.Println("id: ", id, "event time: ", d.EventTime().Nanosecond())
+		}
 		result = result.Append(sinksdk.ResponseOK(id))
 	}
 	return result
