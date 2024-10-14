@@ -48,10 +48,10 @@ func (l *SlowSink) Sink(ctx context.Context, datumStreamCh <-chan sinksdk.Datum)
 
 	for d := range datumStreamCh {
 		id := d.ID()
-		// first 5 minutes(configurable), sink should work normally. Post that, based on event times of mssgs,
-		// if event time is multiple of 3 (configurable) we are intriducing sleep to mimic slow sink
-		// sleep duration is in a range based on env variables (min and max time)
-		if d.EventTime().Nanosecond()%3 == 0 && time.Since(l.startTime) >= 5*time.Minute {
+		// first 5 minutes(configurable), sink should work normally. B/w 5 and 8 minutes based on event times of mssgs,
+		// if event time is multiple of 3 (configurable) we are introducing sleep to mimic slow sink
+		// sleep duration is in a range based on set env variables (min and max time)
+		if d.EventTime().Nanosecond()%3 == 0 && time.Since(l.startTime) >= 5*time.Minute && time.Since(l.startTime) <= 8*time.Minute {
 			randomNumber := rand.Intn(max-min+1) + min
 			sleepDuration := time.Duration(randomNumber) * time.Second
 			fmt.Println("id: ", id, "sleep time: ", sleepDuration, "event time: ", d.EventTime().Nanosecond())
